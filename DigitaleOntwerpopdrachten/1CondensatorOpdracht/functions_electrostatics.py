@@ -42,7 +42,7 @@ def initialize_variables_Laplace(grid_half_width,disk_radius,half_height_domain,
     Nz = len(z)
 
     r_repmat = np.tile(r,(Nz,1))
-
+# np.tile -> constructs a new array by repeating the input array A according to the specified number of repetitions reps
     V = np.zeros((Nz,Nr))
     B = np.zeros((Nz,Nr), dtype=bool)
 
@@ -90,13 +90,13 @@ def iteration_jacobi_FAST(V,B,r_repmat,h,idx_z1,idx_z2,idx_R,V1,V2):
 
     return compute_diff(V_copy,V)
 
-
+# gradient square of V = -density/permittivity
 def solve_Laplace_equation(V,B,r_repmat,h,idx_z1,idx_z2,idx_R,V1,V2,eps):
     compteur = 0
     while iteration_jacobi_FAST(V,B,r_repmat,h,idx_z1,idx_z2,idx_R,V1,V2) > eps:
         iteration_jacobi_FAST(V,B,r_repmat,h,idx_z1,idx_z2,idx_R,V1,V2)
         compteur += 1
-        #print(iteration_jacobi_FAST() - eps)
+        # print(iteration_jacobi_FAST() - eps)
     return compteur
 
 
