@@ -209,7 +209,7 @@ def calculate_V_disk_at_origin_uniform_surface_charge_density(z_disk,charge_one_
 
     for xc in x_positions:
         for yc in y_positions:
-            if np.sqrt(xc**2+yc**2)<=disk_radius: # magnitude doit être plus petit que zéro 
+            if np.sqrt(xc**2+yc**2)<=disk_radius: # magnitude doit être plus petit que le radius 
                 r_charge = np.array([xc, yc, z_disk])
                 #r_field = np.array([r, 0, z])
                 V += electric_potential_point_charge_cartesian(r_charge, R, Z, charge_one_point)
