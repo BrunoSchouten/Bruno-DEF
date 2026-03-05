@@ -3,14 +3,19 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy.ma as ma
 
+# What the fct does? -> Find the index which is the nearest to a given value 
 
 def find_idx_nearest(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return idx
 
+# np.asrray -> Converts to numpy array
+#  np.abs -> absolute value 
+# argmin -> find the thing with the smallest value 
 
 
+# Why use this fct? What is it's purpose? 
 def initialization_contour(V,B,V0):
     """ Initialize electrical potential of domain boundaries at V0 """
     V[0,:] = V0  # top edge
@@ -21,12 +26,14 @@ def initialization_contour(V,B,V0):
     B[:,-1] = True
     return V, B
 
+# What is equipotential? An equipotential surface (or line) is a region where the electric potential V is the same everywhere.
 def create_equipotential_disk(V,B,idx_z1,idx_z2,idx_R,V1,V2):
     B[idx_z1,:idx_R] = True
     V[idx_z1,:idx_R] = V1
     B[idx_z2,:idx_R] = True
     V[idx_z2,:idx_R] = V2
     return V, B
+
 
 def initialize_variables_Laplace(grid_half_width,disk_radius,half_height_domain,h,z_pos_disk1,z_pos_disk2,V0,V1,V2):
     r = np.arange(0, grid_half_width, h)  # radius
@@ -35,7 +42,7 @@ def initialize_variables_Laplace(grid_half_width,disk_radius,half_height_domain,
     Nz = len(z)
 
     r_repmat = np.tile(r,(Nz,1))
-
+# np.tile -> constructs a new array by repeating the input array A according to the specified number of repetitions reps
     V = np.zeros((Nz,Nr))
     B = np.zeros((Nz,Nr), dtype=bool)
 
@@ -83,15 +90,17 @@ def iteration_jacobi_FAST(V,B,r_repmat,h,idx_z1,idx_z2,idx_R,V1,V2):
 
     return compute_diff(V_copy,V)
 
-
+# gradient square of V = -density/permittivity
 def solve_Laplace_equation(V,B,r_repmat,h,idx_z1,idx_z2,idx_R,V1,V2,eps):
     compteur = 0
     while iteration_jacobi_FAST(V,B,r_repmat,h,idx_z1,idx_z2,idx_R,V1,V2) > eps:
         iteration_jacobi_FAST(V,B,r_repmat,h,idx_z1,idx_z2,idx_R,V1,V2)
         compteur += 1
-        #print(iteration_jacobi_FAST() - eps)
+        # print(iteration_jacobi_FAST() - eps)
     return compteur
 
+
+# E = -gradient of V
 def compute_E_disk(V,B,h):
     Nz = V.shape[0]
     Nr = V.shape[1]
@@ -134,8 +143,8 @@ def compute_E_pt_charge(V,B,h):
     return Er, Ez, norme_E
 
 
-
-
+# Opdracht 2
+# this function create two array one for the r-ax and the other for the z-ax then it makes  a zero array of the shape 
 def initialize_plane_grid_for_uniformly_charged_disk(half_height_domain,grid_half_width,grid_step):
 
     r = np.arange(0, grid_half_width, grid_step)  # width
@@ -175,8 +184,9 @@ def electric_potential_point_charge_cartesian(r_charge, R, Z, charge):
     sy = 0. - r_charge[1]
     sz = Z - r_charge[2]
 
-    s_norm = np.sqrt(sx**2 + sy**2 + sz**2)
+    s_norm = np.sqrt(sx**2 + sy**2 + sz**2) # magnitude 
     V = charge / (4 * np.pi * epsilon0 * s_norm)
+    # Use formula to know the potential 
     V[s_norm<0.00001] = 0.
 
     return V
@@ -188,22 +198,27 @@ def calculate_V_disk_at_origin_uniform_surface_charge_density(z_disk,charge_one_
     x_positions = np.arange(-disk_radius, disk_radius, inter_charge_distance)
     y_positions = np.arange(-disk_radius, disk_radius, inter_charge_distance)
     cnt = 0
+    # Crée un array qui dit les pts du disque sur x et y, crée un rectangle 
 
     Nr = len(r)
-    Nz = len(z)
+    Nz = len(z) 
     V = np.zeros((Nz,Nr))
     Z, R = np.meshgrid(z, r, indexing='ij')
 
+    # The purpose of meshgrid is to create a rectangular grid out of an array of x values and an array of y values.
+
     for xc in x_positions:
         for yc in y_positions:
-            if np.sqrt(xc**2+yc**2)<=disk_radius:
+            if np.sqrt(xc**2+yc**2)<=disk_radius: # magnitude doit être plus petit que le radius 
                 r_charge = np.array([xc, yc, z_disk])
                 #r_field = np.array([r, 0, z])
                 V += electric_potential_point_charge_cartesian(r_charge, R, Z, charge_one_point)
                 cnt += 1
+    # cnt -> it's the count of point 
+    # Give the potential for every point in the disk 
 
     XX, YY = np.meshgrid(x_positions, y_positions)
-    RR_mask = np.sqrt(XX*XX+YY*YY) > disk_radius
+    RR_mask = np.sqrt(XX*XX+YY*YY) > disk_radius # tout les pts qui ne sont pas dans le disque 
     XX[RR_mask] = np.nan
     YY[RR_mask] = np.nan
     
@@ -264,6 +279,7 @@ def extents(f):
     return [f[0] - delta/2, f[-1] + delta/2]
 
 
+# Plot l'elektrische potential, elektrische veld vector, la magnitude de l'elektrische veld  
 def plot_results_disk(Ez,Er,normE,V,r,z,h,disk_radius,z_pos_disk1,z_pos_disk2):
     plt.figure(10, figsize=(9, 4))
     plt.subplot(1, 3, 1)
